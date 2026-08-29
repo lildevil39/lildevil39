@@ -1,0 +1,1 @@
+Domain-level API wrappers (projectsService, ordersService, authService, ...) built on top of src/api/client.ts go here.

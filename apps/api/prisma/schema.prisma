@@ -1,0 +1,507 @@
+// NIVORA — PostgreSQL schema (Prisma 5)
+// All money: integer minor units + currency code. All ids: cuid.
+
+generator client { provider = "prisma-client-js" }
+datasource db   { provider = "postgresql"; url = env("DATABASE_URL") }
+
+enum Role            { CUSTOMER ADMIN }
+enum UserStatus      { ACTIVE SUSPENDED }
+enum Locale          { FR EN AR }
+enum Currency        { TND EUR }
+enum PlanTier        { STARTER PREMIUM }
+enum ProjectStatus   { DRAFT SUBMITTED PROCESSING READY FAILED ARCHIVED }
+enum OrderStatus     { PENDING_PAYMENT PAID PROCESSING COMPLETED CANCELLED REFUNDED }
+enum PaymentStatus   { INITIATED SUCCEEDED FAILED REFUNDED }
+enum FileKind        { PHOTO GALLERY BACKGROUND MUSIC LOGO DOCUMENT OUTPUT }
+enum Attendance      { YES NO MAYBE }
+enum ModerationState { PENDING APPROVED REJECTED }
+enum JobType         { INVITATION_RENDER VIDEO_GENERATE LOGO_GENERATE BRAND_GENERATE CV_PDF CARD_RENDER }
+enum JobStatus       { QUEUED PROCESSING COMPLETED FAILED }
+enum NotificationType {
+  PAYMENT_SUCCEEDED PROJECT_CREATED PROJECT_PROCESSING PROJECT_COMPLETED
+  PROJECT_FAILED NEW_RSVP NEW_WISH ORDER_UPDATED
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  passwordHash  String
+  role          Role       @default(CUSTOMER)
+  status        UserStatus @default(ACTIVE)
+  emailVerifiedAt DateTime?
+  locale        Locale     @default(FR)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  profile       UserProfile?
+  sessions      Session[]
+  tokens        AuthToken[]
+  projects      Project[]
+  orders        Order[]
+  payments      Payment[]
+  files         File[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+
+  @@index([role, status])
+  @@map("users")
+}
+
+model UserProfile {
+  id        String  @id @default(cuid())
+  userId    String  @unique
+  firstName String
+  lastName  String
+  phone     String?
+  country   String?
+  city      String?
+  company   String?
+  avatarFileId String?
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("user_profiles")
+}
+
+model Session {
+  id               String   @id @default(cuid())
+  userId           String
+  refreshTokenHash String   @unique
+  userAgent        String?
+  ip               String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@map("sessions")
+}
+
+model AuthToken {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // EMAIL_VERIFY | PASSWORD_RESET
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, type])
+  @@map("auth_tokens")
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  key         String   @unique          // wedding-invitation, wedding-video, cv, business-card, logo, brand-identity
+  nameFr      String
+  nameEn      String
+  taglineFr   String
+  taglineEn   String
+  icon        String
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  plans     ServicePlan[]
+  templates ServiceTemplate[]
+  projects  Project[]
+  @@map("services")
+}
+
+model ServicePlan {
+  id         String   @id @default(cuid())
+  serviceId  String
+  tier       PlanTier
+  priceTnd   Int                        // millimes
+  priceEur   Int                        // cents
+  featuresFr Json                       // string[]
+  featuresEn Json
+  isActive   Boolean  @default(true)
+  updatedAt  DateTime @updatedAt
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  @@unique([serviceId, tier])
+  @@map("service_plans")
+}
+
+model ServiceTemplate {
+  id           String   @id @default(cuid())
+  serviceId    String
+  code         String                    // INV-01
+  name         String
+  description  String?
+  previewKey   String?                   // storage key
+  config       Json                      // palette, fonts, layout switches
+  requiredTier PlanTier @default(STARTER)
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  service      Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  projects     Project[]
+  @@unique([serviceId, code])
+  @@map("service_templates")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  userId      String
+  serviceId   String
+  templateId  String?
+  title       String
+  status      ProjectStatus @default(DRAFT)
+  planTier    PlanTier      @default(STARTER)
+  currentStep Int           @default(1)
+  slug        String?       @unique      // public invitation slug
+  publishedAt DateTime?
+  deletedAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service    Service          @relation(fields: [serviceId], references: [id])
+  template   ServiceTemplate? @relation(fields: [templateId], references: [id])
+  invitation WeddingInvitation?
+  video      VideoProject?
+  cv         CvProject?
+  card       BusinessCard?
+  logo       LogoProject?
+  brand      BrandProject?
+  files      File[]
+  orders     Order[]
+  jobs       GenerationJob[]
+
+  @@index([userId, status])
+  @@index([serviceId])
+  @@map("projects")
+}
+
+model WeddingInvitation {
+  id           String   @id @default(cuid())
+  projectId    String   @unique
+  brideName    String
+  groomName    String
+  weddingDate  DateTime
+  weddingTime  String?
+  venueName    String?
+  address      String?
+  mapsUrl      String?
+  latitude     Float?
+  longitude    Float?
+  contactPhone String?
+  contactEmail String?
+  dressCode    String?
+  notes        String?
+  locale       Locale   @default(FR)
+  messageFr    String?
+  messageEn    String?
+  messageAr    String?
+  musicId      String?
+  musicFileId  String?                 // customer upload
+  coverFileId  String?
+  rsvpEnabled  Boolean  @default(true)
+  rsvpDeadline DateTime?
+  wishesEnabled Boolean @default(true)
+  countdownEnabled Boolean @default(true)
+  viewCount    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project  Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  music    Music?         @relation(fields: [musicId], references: [id])
+  events   WeddingEvent[]
+  rsvps    WeddingRsvp[]
+  messages WeddingMessage[]
+  @@map("wedding_invitations")
+}
+
+model WeddingEvent {
+  id           String   @id @default(cuid())
+  invitationId String
+  title        String                   // Cérémonie, Cocktail, Dîner, Soirée
+  startsAt     DateTime?
+  timeLabel    String?                  // "17:00"
+  note         String?
+  sortOrder    Int      @default(0)
+  invitation   WeddingInvitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@index([invitationId])
+  @@map("wedding_events")
+}
+
+model WeddingRsvp {
+  id           String     @id @default(cuid())
+  invitationId String
+  name         String
+  email        String?
+  phone        String?
+  guests       Int        @default(1)
+  attendance   Attendance
+  message      String?
+  ip           String?
+  createdAt    DateTime   @default(now())
+  invitation   WeddingInvitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@index([invitationId, attendance])
+  @@map("wedding_rsvps")
+}
+
+model WeddingMessage {
+  id           String          @id @default(cuid())
+  invitationId String
+  name         String
+  message      String
+  status       ModerationState @default(PENDING)
+  createdAt    DateTime        @default(now())
+  invitation   WeddingInvitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@index([invitationId, status])
+  @@map("wedding_messages")
+}
+
+model Music {
+  id          String   @id @default(cuid())
+  title       String
+  artist      String?
+  durationSec Int
+  storageKey  String
+  previewKey  String?
+  license     String                    // CC0, CC-BY, OWNED
+  attribution String?
+  tags        String[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  invitations WeddingInvitation[]
+  @@map("music")
+}
+
+model VideoProject {
+  id           String   @id @default(cuid())
+  projectId    String   @unique
+  brideName    String?
+  groomName    String?
+  eventDate    DateTime?
+  location     String?
+  message      String?
+  style        String?                  // Elegant | Luxury | Romantic | Cinematic | Minimal | Modern
+  palette      Json?
+  musicId      String?
+  aspectRatio  String   @default("9:16")
+  durationSec  Int      @default(30)
+  outputFileId String?
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scenes       VideoScene[]
+  @@map("video_projects")
+}
+
+model VideoScene {
+  id             String @id @default(cuid())
+  videoProjectId String
+  index          Int
+  kind           String                 // title | photo | text | outro
+  text           String?
+  fileId         String?
+  durationMs     Int    @default(3000)
+  transition     String?
+  video          VideoProject @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
+  @@unique([videoProjectId, index])
+  @@map("video_scenes")
+}
+
+model CvProject {
+  id             String  @id @default(cuid())
+  projectId      String  @unique
+  fullName       String
+  headline       String?
+  summary        String?
+  email          String?
+  phone          String?
+  location       String?
+  photoFileId    String?
+  socials        Json?                  // [{network,url}]
+  education      Json?                  // [{school,degree,start,end,description}]
+  experience     Json?
+  skills         Json?                  // [{name,level}]
+  languages      Json?
+  certificates   Json?
+  projectsList   Json?
+  outputPdfFileId String?
+  project        Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@map("cv_projects")
+}
+
+model BusinessCard {
+  id           String  @id @default(cuid())
+  projectId    String  @unique
+  fullName     String
+  jobTitle     String?
+  company      String?
+  phone        String?
+  email        String?
+  website      String?
+  address      String?
+  socials      Json?
+  logoFileId   String?
+  palette      Json?
+  fontPair     String?
+  qrTargetUrl  String?
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@map("business_cards")
+}
+
+model LogoProject {
+  id             String  @id @default(cuid())
+  projectId      String  @unique
+  brandName      String
+  slogan         String?
+  industry       String?
+  description    String?
+  style          String?                // Minimal | Luxury | Modern | Tech | Elegant | Bold | Vintage | Creative
+  colors         Json?
+  symbolIdeas    String?
+  targetAudience String?
+  outputs        Json?                  // [{fileId, variant}]
+  project        Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@map("logo_projects")
+}
+
+model BrandProject {
+  id              String  @id @default(cuid())
+  projectId       String  @unique
+  companyName     String
+  industry        String?
+  description     String?
+  targetAudience  String?
+  personality     Json?                 // string[]
+  colors          Json?
+  typography      Json?
+  logoFileId      String?
+  referenceFileIds Json?
+  deliverables    Json?                 // {palette, typography, card, social, guidelines}
+  project         Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@map("brand_projects")
+}
+
+model File {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String?
+  kind        FileKind
+  provider    String                    // s3 | cloudinary | supabase | local
+  bucket      String?
+  storageKey  String
+  publicUrl   String?                   // only for intentionally public objects
+  mimeType    String
+  sizeBytes   Int
+  width       Int?
+  height      Int?
+  durationSec Int?
+  altText     String?
+  sortOrder   Int      @default(0)
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@index([projectId, kind])
+  @@map("files")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  reference       String      @unique   // NIV-2026-000123
+  userId          String
+  projectId       String
+  serviceKey      String
+  planTier        PlanTier
+  currency        Currency
+  subtotal        Int
+  discount        Int         @default(0)
+  total           Int
+  couponId        String?
+  status          OrderStatus @default(PENDING_PAYMENT)
+  paidAt          DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id])
+  project  Project   @relation(fields: [projectId], references: [id])
+  coupon   Coupon?   @relation(fields: [couponId], references: [id])
+  payments Payment[]
+  @@index([userId, status])
+  @@map("orders")
+}
+
+model Payment {
+  id           String        @id @default(cuid())
+  orderId      String
+  userId       String
+  provider     String                   // stripe | paypal | konnect | mock
+  providerRef  String?       @unique
+  amount       Int
+  currency     Currency
+  status       PaymentStatus @default(INITIATED)
+  rawEvent     Json?                    // last webhook payload (no card data)
+  refundedAt   DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  order        Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id])
+  @@index([orderId])
+  @@map("payments")
+}
+
+model Coupon {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  percentOff    Int?
+  amountOff     Int?
+  currency      Currency?
+  serviceKeys   String[]
+  maxRedemptions Int?
+  timesRedeemed Int      @default(0)
+  startsAt      DateTime?
+  expiresAt     DateTime?
+  isActive      Boolean  @default(true)
+  orders        Order[]
+  @@map("coupons")
+}
+
+model GenerationJob {
+  id          String    @id @default(cuid())
+  projectId   String
+  type        JobType
+  status      JobStatus @default(QUEUED)
+  provider    String?
+  providerJobId String?
+  input       Json
+  output      Json?
+  error       String?
+  attempts    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@index([projectId, type, status])
+  @@map("generation_jobs")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  meta      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+  actor     User?    @relation(fields: [actorId], references: [id])
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}

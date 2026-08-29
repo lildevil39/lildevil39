@@ -1,0 +1,9 @@
+{
+  "_comment": "Guest-facing wedding invitation content only — driven by wedding_invitations.locale, independent of the interface language above.",
+  "invitation": {
+    "rsvp_yes": "سأحضر",
+    "rsvp_no": "لن أتمكن من الحضور",
+    "rsvp_maybe": "ربما",
+    "wishes_title": "التهاني"
+  }
+}

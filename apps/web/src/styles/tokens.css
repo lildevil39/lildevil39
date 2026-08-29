@@ -1,0 +1,55 @@
+/**
+ * Placeholder tokens for the Classical platform design system.
+ * README.md says: "Platform tokens come from _ds/classical-*/styles.css —
+ * link that stylesheet and use its variables; never hard-code its hexes."
+ * That stylesheet isn't part of this handoff bundle — replace this file
+ * with the real one once it exists, keeping the variable names stable.
+ */
+:root {
+  --color-ground: #f3f2f2;
+  --color-text: #201f1d;
+  --color-accent: #b68235;
+  --color-accent-700: #8a611f;
+  --color-border: #dedcda;
+  --color-surface: #ffffff;
+
+  --font-display: "Cormorant Garamond", serif;
+  --font-body: "Lora", serif;
+
+  --radius: 4px;
+  --space-unit: 1.15;
+
+  --shadow-sm: 0 1px 2px rgba(32, 31, 29, 0.06);
+  --shadow-md: 0 4px 12px rgba(32, 31, 29, 0.08);
+  --shadow-lg: 0 12px 32px rgba(32, 31, 29, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ground);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

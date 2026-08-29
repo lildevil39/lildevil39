@@ -1,0 +1,21 @@
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "pricing": "Pricing",
+    "login": "Log in",
+    "register": "Start my project"
+  },
+  "landing": {
+    "hero_title": "Create. Personalize. Impress.",
+    "hero_subtitle": "Pick a creative service, personalize it, preview it live, and get a result ready to share.",
+    "cta_primary": "Start my project",
+    "cta_secondary": "Discover our services"
+  },
+  "dashboard": {
+    "welcome": "Welcome back, {{firstName}}",
+    "active_projects": "Active projects",
+    "completed": "Completed",
+    "pending_payment": "Pending payment"
+  }
+}

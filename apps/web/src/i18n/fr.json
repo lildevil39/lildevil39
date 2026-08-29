@@ -1,0 +1,21 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "services": "Services",
+    "pricing": "Tarifs",
+    "login": "Se connecter",
+    "register": "Créer mon projet"
+  },
+  "landing": {
+    "hero_title": "Créez. Personnalisez. Impressionnez.",
+    "hero_subtitle": "Choisissez un service créatif, personnalisez-le, prévisualisez-le en direct et recevez un résultat prêt à partager.",
+    "cta_primary": "Créer mon projet",
+    "cta_secondary": "Découvrir nos services"
+  },
+  "dashboard": {
+    "welcome": "Bon retour, {{firstName}}",
+    "active_projects": "Projets actifs",
+    "completed": "Terminés",
+    "pending_payment": "Paiement en attente"
+  }
+}
