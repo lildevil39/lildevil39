@@ -1,6 +1,6 @@
 /**
  * Placeholder tokens for the Classical platform design system.
- * README.md says: "Platform tokens come from _ds/classical-*/styles.css —
+ * README.md says: "Platform tokens come from _ds/classical-<variant>/styles.css —
  * link that stylesheet and use its variables; never hard-code its hexes."
  * That stylesheet isn't part of this handoff bundle — replace this file
  * with the real one once it exists, keeping the variable names stable.

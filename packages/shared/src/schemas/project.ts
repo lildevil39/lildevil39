@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PLAN_TIERS, SERVICE_KEYS } from "../enums.js";
+import { PLAN_TIERS, SERVICE_KEYS } from "../enums";
 
 export const createProjectSchema = z.object({
   serviceKey: z.enum(SERVICE_KEYS),

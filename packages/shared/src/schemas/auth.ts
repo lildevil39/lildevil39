@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LOCALES } from "../enums.js";
+import { LOCALES } from "../enums";
 
 /** min 10 chars, per README §Auth password rules */
 export const passwordSchema = z.string().min(10);

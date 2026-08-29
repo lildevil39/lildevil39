@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -9,7 +7,9 @@ services:
       POSTGRES_PASSWORD: nivora
       POSTGRES_DB: nivora
     ports:
-      - "5432:5432"
+      # Host port 55432, not 5432 — this machine already runs several
+      # native Postgres instances on 5432/5433/5434; avoid competing with them.
+      - "55432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

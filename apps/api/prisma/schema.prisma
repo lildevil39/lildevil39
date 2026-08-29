@@ -1,25 +1,100 @@
 // NIVORA — PostgreSQL schema (Prisma 5)
 // All money: integer minor units + currency code. All ids: cuid.
 
-generator client { provider = "prisma-client-js" }
-datasource db   { provider = "postgresql"; url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
 
-enum Role            { CUSTOMER ADMIN }
-enum UserStatus      { ACTIVE SUSPENDED }
-enum Locale          { FR EN AR }
-enum Currency        { TND EUR }
-enum PlanTier        { STARTER PREMIUM }
-enum ProjectStatus   { DRAFT SUBMITTED PROCESSING READY FAILED ARCHIVED }
-enum OrderStatus     { PENDING_PAYMENT PAID PROCESSING COMPLETED CANCELLED REFUNDED }
-enum PaymentStatus   { INITIATED SUCCEEDED FAILED REFUNDED }
-enum FileKind        { PHOTO GALLERY BACKGROUND MUSIC LOGO DOCUMENT OUTPUT }
-enum Attendance      { YES NO MAYBE }
-enum ModerationState { PENDING APPROVED REJECTED }
-enum JobType         { INVITATION_RENDER VIDEO_GENERATE LOGO_GENERATE BRAND_GENERATE CV_PDF CARD_RENDER }
-enum JobStatus       { QUEUED PROCESSING COMPLETED FAILED }
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+enum Locale {
+  FR
+  EN
+  AR
+}
+enum Currency {
+  TND
+  EUR
+}
+enum PlanTier {
+  STARTER
+  PREMIUM
+}
+enum ProjectStatus {
+  DRAFT
+  SUBMITTED
+  PROCESSING
+  READY
+  FAILED
+  ARCHIVED
+}
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+enum PaymentStatus {
+  INITIATED
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+enum FileKind {
+  PHOTO
+  GALLERY
+  BACKGROUND
+  MUSIC
+  LOGO
+  DOCUMENT
+  OUTPUT
+}
+enum Attendance {
+  YES
+  NO
+  MAYBE
+}
+enum ModerationState {
+  PENDING
+  APPROVED
+  REJECTED
+}
+enum JobType {
+  INVITATION_RENDER
+  VIDEO_GENERATE
+  LOGO_GENERATE
+  BRAND_GENERATE
+  CV_PDF
+  CARD_RENDER
+}
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
 enum NotificationType {
-  PAYMENT_SUCCEEDED PROJECT_CREATED PROJECT_PROCESSING PROJECT_COMPLETED
-  PROJECT_FAILED NEW_RSVP NEW_WISH ORDER_UPDATED
+  PAYMENT_SUCCEEDED
+  PROJECT_CREATED
+  PROJECT_PROCESSING
+  PROJECT_COMPLETED
+  PROJECT_FAILED
+  NEW_RSVP
+  NEW_WISH
+  ORDER_UPDATED
 }
 
 model User {

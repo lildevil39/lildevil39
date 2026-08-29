@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FILE_KINDS } from "../enums.js";
+import { FILE_KINDS } from "../enums";
 
 export const signUploadSchema = z.object({
   projectId: z.string().cuid(),

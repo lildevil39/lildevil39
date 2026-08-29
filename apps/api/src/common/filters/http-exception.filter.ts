@@ -23,7 +23,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const body = exception.getResponse();
       const payload: ApiErrorShape =
         typeof body === "object" && body !== null && "code" in body
-          ? (body as ApiErrorShape)
+          ? { ...(body as ApiErrorShape), statusCode: status } // always trust the real HTTP status, not whatever the throw site set (or omitted)
           : {
               statusCode: status,
               code: HttpStatus[status] ?? "ERROR",

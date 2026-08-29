@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PLAN_TIERS } from "../enums.js";
+import { PLAN_TIERS } from "../enums";
 
 export const createOrderSchema = z.object({
   projectId: z.string().cuid(),

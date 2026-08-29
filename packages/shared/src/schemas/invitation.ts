@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ATTENDANCE, LOCALES } from "../enums.js";
+import { ATTENDANCE, LOCALES } from "../enums";
 
 export const weddingEventSchema = z.object({
   title: z.string().min(1),
