@@ -22,7 +22,21 @@ export class AdminService {
   }
 
   listUsers() {
-    return this.prisma.user.findMany({ include: { profile: true }, orderBy: { createdAt: "desc" } });
+    return this.prisma.user.findMany({
+      // Never select passwordHash — this response goes straight to the client.
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        status: true,
+        emailVerifiedAt: true,
+        locale: true,
+        createdAt: true,
+        updatedAt: true,
+        profile: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   updateUser(_actor: AuthenticatedUser, _id: string, _body: Record<string, unknown>) {

@@ -26,9 +26,10 @@ export class AuthController {
   @Post("login")
   login(
     @Body(new ZodValidationPipe(loginSchema)) dto: unknown,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.auth.login(dto as never, res);
+    return this.auth.login(dto as never, req, res);
   }
 
   @Public()
@@ -39,8 +40,8 @@ export class AuthController {
 
   @Post("logout")
   @HttpCode(204)
-  logout(@CurrentUser() user: AuthenticatedUser, @Res({ passthrough: true }) res: Response) {
-    return this.auth.logout(user, res);
+  logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    return this.auth.logout(req, res);
   }
 
   @Public()
