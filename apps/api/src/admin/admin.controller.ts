@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { Roles } from "../common/decorators/roles.decorator.js";
 import { RolesGuard } from "../common/guards/roles.guard.js";
 import { CurrentUser, type AuthenticatedUser } from "../common/decorators/current-user.decorator.js";
@@ -46,9 +46,19 @@ export class AdminController {
     return this.admin.refundPayment(actor, id);
   }
 
+  @Get("services")
+  listServices() {
+    return this.admin.listServices();
+  }
+
+  @Put("services/:key")
+  updateService(@CurrentUser() actor: AuthenticatedUser, @Param("key") key: string, @Body() body: Record<string, unknown>) {
+    return this.admin.updateService(actor, key, body);
+  }
+
   @Get("templates")
-  listTemplates() {
-    return this.admin.listTemplates();
+  listTemplates(@Query("service") serviceKey?: string) {
+    return this.admin.listTemplates(serviceKey);
   }
 
   @Post("templates")

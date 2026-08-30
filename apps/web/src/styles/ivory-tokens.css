@@ -1,0 +1,20 @@
+/**
+ * Wedding invitation content register — used only inside invitation
+ * templates and /invite/:slug. Deliberately separate from the platform's
+ * Classical tokens in tokens.css. See README § Design tokens.
+ */
+:root {
+  --ivory-paper: #f7f2ea;
+  --ivory-ground: #efe8dc;
+  --ivory-card: #fbf7f0;
+  --ivory-champagne: #c9b392;
+  --ivory-beige: #a08e72;
+  --ivory-dusty-rose: #b9868a;
+  --ivory-burgundy: #8a1c30;
+  --ivory-burgundy-pressed: #6f1526;
+  --ivory-ink: #4a4038;
+  --ivory-muted: #8c7c64;
+  --ivory-radius-card: 22px;
+  --ivory-radius-field: 12px;
+  --ivory-shadow: 0 24px 50px -30px rgba(126, 104, 76, 0.5);
+}

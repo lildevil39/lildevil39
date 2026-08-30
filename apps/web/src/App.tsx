@@ -17,6 +17,7 @@ import { ServicePickerPage } from "./pages/create/ServicePickerPage.js";
 import { CreateServicePage } from "./pages/create/CreateServicePage.js";
 import { InvitePage } from "./pages/invite/InvitePage.js";
 import { AdminPage } from "./pages/admin/AdminPage.js";
+import { ServicesPage as AdminServicesPage } from "./pages/admin/ServicesPage.js";
 
 export function App() {
   return (
@@ -41,7 +42,8 @@ export function App() {
 
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminPage />} />
-            {/* TODO: one route per admin sidebar item — see README § Admin */}
+            <Route path="services" element={<AdminServicesPage />} />
+            {/* TODO: the rest of the admin sidebar items — see README § Admin */}
           </Route>
 
           <Route element={<InviteLayout />}>

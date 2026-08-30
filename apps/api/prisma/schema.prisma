@@ -250,9 +250,12 @@ model Project {
 model WeddingInvitation {
   id           String   @id @default(cuid())
   projectId    String   @unique
-  brideName    String
-  groomName    String
-  weddingDate  DateTime
+  // Nullable, not required: the multi-step form autosaves each step as the
+  // customer fills it in, so a fresh draft has none of these set yet.
+  // Presence of all three is checked at submit-time instead (projects.submit).
+  brideName    String?
+  groomName    String?
+  weddingDate  DateTime?
   weddingTime  String?
   venueName    String?
   address      String?
