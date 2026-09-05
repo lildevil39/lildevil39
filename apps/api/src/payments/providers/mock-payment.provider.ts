@@ -18,7 +18,13 @@ export class MockPaymentProvider implements PaymentProvider {
     const providerRef = `mock_${randomUUID()}`;
     // In dev this could redirect straight to successUrl with a query flag;
     // left as a TODO so the checkout UI can render an explicit mock screen.
-    return { checkoutUrl: `${input.successUrl}?mock=1&ref=${providerRef}`, providerRef };
+    // successUrl may already carry its own query string (e.g. ?paid=1) —
+    // append with & in that case instead of a second, malformed ?.
+    const separator = input.successUrl.includes("?") ? "&" : "?";
+    return {
+      checkoutUrl: `${input.successUrl}${separator}mock=1&ref=${providerRef}`,
+      providerRef,
+    };
   }
 
   async verifyWebhook(rawBody: Buffer): Promise<WebhookEvent> {

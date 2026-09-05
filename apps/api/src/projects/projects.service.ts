@@ -7,10 +7,14 @@ import {
 } from "@nestjs/common";
 import type { CreateProjectDto, ListProjectsQueryDto, PatchProjectDto } from "@nivora/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
+import { OrdersService } from "../orders/orders.service.js";
 
 @Injectable()
 export class ProjectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly orders: OrdersService,
+  ) {}
 
   list(userId: string, query: ListProjectsQueryDto) {
     return this.prisma.project.findMany({
@@ -165,7 +169,7 @@ export class ProjectsService {
       include: {
         service: true,
         template: true,
-        invitation: { include: { events: true }, },
+        invitation: { include: { events: true } },
       },
     });
 
@@ -184,19 +188,88 @@ export class ProjectsService {
     );
   }
 
-  submit(_id: string) {
-    throw new NotImplementedException(
-      "projects.submit: TODO — validate required fields, create Order (price snapshot from ServicePlan)",
-    );
+  async submit(id: string) {
+    const project = await this.prisma.project.findUniqueOrThrow({
+      where: { id },
+      include: { service: true, invitation: true },
+    });
+
+    if (project.service.key === "wedding-invitation") {
+      const inv = project.invitation;
+      if (!inv?.brideName || !inv?.groomName || !inv?.weddingDate) {
+        throw new BadRequestException({
+          code: "INCOMPLETE_PROJECT",
+          message: "Bride name, groom name and wedding date are required before ordering",
+        });
+      }
+    } else {
+      throw new NotImplementedException(
+        `projects.submit: validation for service "${project.service.key}" isn't wired up yet`,
+      );
+    }
+
+    const order = await this.orders.createForProject(project.userId, project.id, project.planTier);
+    await this.prisma.project.update({ where: { id }, data: { status: "SUBMITTED" } });
+    return { orderId: order.id };
   }
 
-  publish(_id: string) {
-    throw new NotImplementedException(
-      "projects.publish: TODO — order must be PAID; allocate slug, snapshot render payload, set publishedAt",
-    );
+  async publish(id: string) {
+    const project = await this.prisma.project.findUniqueOrThrow({
+      where: { id },
+      include: { service: true, orders: true, invitation: true },
+    });
+
+    if (project.service.key !== "wedding-invitation") {
+      throw new NotImplementedException(
+        `projects.publish: publishing for service "${project.service.key}" isn't wired up yet`,
+      );
+    }
+
+    const paidOrder = project.orders.find((o) => o.status === "PAID" || o.status === "COMPLETED");
+    if (!paidOrder) {
+      throw new ForbiddenException({
+        code: "ORDER_NOT_PAID",
+        message: "This project has no paid order yet",
+      });
+    }
+
+    const slug = project.slug ?? (await this.allocateSlug(project.invitation));
+    const updated = await this.prisma.project.update({
+      where: { id },
+      data: { slug, publishedAt: new Date(), status: "READY" },
+    });
+
+    const webUrl = process.env.WEB_URL ?? "http://localhost:5173";
+    return { slug: updated.slug, url: `${webUrl}/invite/${updated.slug}` };
   }
 
-  unpublish(_id: string) {
-    throw new NotImplementedException("projects.unpublish: TODO — clear publishedAt");
+  private slugify(input: string): string {
+    const COMBINING_DIACRITICS = new RegExp(String.fromCharCode(0x5b, 0x5c, 0x75, 0x30, 0x33, 0x30, 0x30, 0x2d, 0x5c, 0x75, 0x30, 0x33, 0x36, 0x66, 0x5d), "g");
+    return input
+      .normalize("NFD")
+      .replace(COMBINING_DIACRITICS, "") // strip combining diacritics (accented letters -> plain ascii)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  private async allocateSlug(invitation: { brideName: string | null; groomName: string | null } | null) {
+    const base =
+      [invitation?.brideName, invitation?.groomName]
+        .filter(Boolean)
+        .map((n) => this.slugify(n as string))
+        .join("-") || "invitation";
+
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const suffix = attempt === 0 ? "" : `-${Math.floor(1000 + Math.random() * 9000)}`;
+      const candidate = `${base}${suffix}`;
+      const exists = await this.prisma.project.findUnique({ where: { slug: candidate } });
+      if (!exists) return candidate;
+    }
+    return `${base}-${Date.now()}`;
+  }
+
+  async unpublish(id: string) {
+    await this.prisma.project.update({ where: { id }, data: { publishedAt: null } });
   }
 }

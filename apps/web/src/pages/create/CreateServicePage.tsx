@@ -390,12 +390,48 @@ function StepTemplate(props: {
 }
 
 function StepReview({ project, onBack }: { project: Project; onBack: () => void }) {
+  const [status, setStatus] = useState<"idle" | "ordering" | "paying" | "publishing" | "done">("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+
+  async function order() {
+    setError(null);
+    try {
+      setStatus("ordering");
+      const { orderId } = await api.post<{ orderId: string }>(`/projects/${project.id}/submit`);
+
+      setStatus("paying");
+      // PAYMENT_PROVIDER=mock (the dev default) finalizes instantly — no
+      // real redirect to wait on. A real provider would redirect the
+      // browser to checkoutUrl instead of continuing straight to publish.
+      await api.post(`/payments/checkout`, { orderId });
+
+      setStatus("publishing");
+      const { url } = await api.post<{ url: string }>(`/projects/${project.id}/publish`);
+      setPublishedUrl(url);
+      setStatus("done");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Échec de la commande");
+      setStatus("idle");
+    }
+  }
+
+  if (publishedUrl) {
+    return (
+      <div>
+        <h2>C'est en ligne !</h2>
+        <p style={{ opacity: 0.7 }}>Votre invitation est publiée et prête à être partagée.</p>
+        <a href={publishedUrl} target="_blank" rel="noreferrer" style={{ color: "var(--color-accent)", wordBreak: "break-all" }}>
+          {publishedUrl}
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h2>Aperçu</h2>
-      <p style={{ opacity: 0.7 }}>
-        Vérifiez les informations ci-contre. L'étape commande/paiement n'est pas encore construite.
-      </p>
+      <p style={{ opacity: 0.7 }}>Vérifiez les informations ci-contre avant de commander.</p>
       <dl style={{ marginTop: 16 }}>
         <dt style={{ opacity: 0.6, fontSize: 12, textTransform: "uppercase" }}>Mariés</dt>
         <dd>{project.invitation?.brideName ?? "—"} & {project.invitation?.groomName ?? "—"}</dd>
@@ -404,7 +440,16 @@ function StepReview({ project, onBack }: { project: Project; onBack: () => void 
         <dt style={{ opacity: 0.6, fontSize: 12, textTransform: "uppercase", marginTop: 12 }}>Modèle</dt>
         <dd>{project.template?.name ?? "—"}</dd>
       </dl>
-      <Button variant="ghost" onClick={onBack} style={{ marginTop: 16 }}>Précédent</Button>
+      {error && <p style={{ color: "var(--color-accent-700)" }}>{error}</p>}
+      <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+        <Button variant="ghost" onClick={onBack} disabled={status !== "idle"}>Précédent</Button>
+        <Button onClick={order} disabled={status !== "idle"}>
+          {status === "idle" && "Enregistrer et commander"}
+          {status === "ordering" && "Création de la commande…"}
+          {status === "paying" && "Paiement…"}
+          {status === "publishing" && "Publication…"}
+        </Button>
+      </div>
     </div>
   );
 }

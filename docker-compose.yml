@@ -7,9 +7,11 @@ services:
       POSTGRES_PASSWORD: nivora
       POSTGRES_DB: nivora
     ports:
-      # Host port 55432, not 5432 — this machine already runs several
-      # native Postgres instances on 5432/5433/5434; avoid competing with them.
-      - "55432:5432"
+      # Host port 45432, not 5432 — this machine already runs several
+      # native Postgres instances on 5432/5433/5434, and Windows periodically
+      # reserves ephemeral ranges (check `netsh interface ipv4 show
+      # excludedportrange protocol=tcp` if this ever fails to bind again).
+      - "45432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

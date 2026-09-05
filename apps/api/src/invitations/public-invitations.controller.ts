@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Req } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
+import type { Request } from "express";
 import { rsvpSchema, wishSchema } from "@nivora/shared";
 import { Public } from "../common/decorators/public.decorator.js";
 import { ZodValidationPipe } from "../common/pipes/zod-validation.pipe.js";
@@ -19,8 +20,8 @@ export class PublicInvitationsController {
   /** 5/hour/IP, honeypot field rejected silently in the schema layer. */
   @Throttle({ default: { limit: 5, ttl: 3600_000 } })
   @Post("rsvp")
-  rsvp(@Param("slug") slug: string, @Body(new ZodValidationPipe(rsvpSchema)) dto: unknown) {
-    return this.invitations.submitRsvp(slug, dto as never);
+  rsvp(@Param("slug") slug: string, @Body(new ZodValidationPipe(rsvpSchema)) dto: unknown, @Req() req: Request) {
+    return this.invitations.submitRsvp(slug, dto as never, req.ip);
   }
 
   @Throttle({ default: { limit: 5, ttl: 3600_000 } })
