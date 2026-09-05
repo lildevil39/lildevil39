@@ -41,6 +41,8 @@ const SERVICES = [
     cta: "Create My Wedding Invitation",
     href: "/create/wedding-invitation",
     swatch: "linear-gradient(135deg, #3d1f24, #160d10)",
+    // A real animated invitation prototype (provided), shown live rather than as a flat photo.
+    preview: "/templates/invitation-foulen-foulen.html",
   },
   {
     icon: Globe2,
@@ -49,6 +51,7 @@ const SERVICES = [
     cta: "Discover Wedding Websites",
     href: "/create/wedding-video",
     swatch: "linear-gradient(135deg, #1f2b30, #0d1416)",
+    preview: undefined as string | undefined,
   },
   {
     icon: LayoutTemplate,
@@ -57,6 +60,7 @@ const SERVICES = [
     cta: "Build My Website",
     href: "/create",
     swatch: "linear-gradient(135deg, #20242f, #0d0e13)",
+    preview: undefined as string | undefined,
   },
   {
     icon: Palette,
@@ -65,6 +69,7 @@ const SERVICES = [
     cta: "Create My Brand",
     href: "/create/brand-identity",
     swatch: "linear-gradient(135deg, #2f2416, #130f0a)",
+    preview: undefined as string | undefined,
   },
   {
     icon: FileText,
@@ -73,6 +78,7 @@ const SERVICES = [
     cta: "Design My CV",
     href: "/create/cv",
     swatch: "linear-gradient(135deg, #241f2f, #0f0d13)",
+    preview: undefined as string | undefined,
   },
   {
     icon: CreditCard,
@@ -81,6 +87,7 @@ const SERVICES = [
     cta: "Create My Business Card",
     href: "/create/business-card",
     swatch: "linear-gradient(135deg, #2a2318, #12100a)",
+    preview: undefined as string | undefined,
   },
 ] as const;
 
@@ -232,9 +239,15 @@ export function LandingPage() {
           <div className="lp-grid lp-services">
             {SERVICES.map((s) => (
               <div key={s.title} className="lp-card">
-                <div className="lp-card-media" style={{ background: s.swatch }}>
-                  <s.icon size={28} strokeWidth={1.2} />
-                </div>
+                {s.preview ? (
+                  <div className="lp-card-media lp-card-media-preview">
+                    <iframe src={s.preview} title={s.title} scrolling="no" tabIndex={-1} />
+                  </div>
+                ) : (
+                  <div className="lp-card-media" style={{ background: s.swatch }}>
+                    <s.icon size={28} strokeWidth={1.2} />
+                  </div>
+                )}
                 <div className="lp-card-body">
                   <h3>{s.title}</h3>
                   <p>{s.tagline}</p>
@@ -481,12 +494,17 @@ const CSS = `
 }
 .lp-card:hover { border-color: var(--gold-dark); transform: translateY(-3px); }
 .lp-card-media {
-  height: 130px; display: flex; align-items: center; justify-content: center; color: var(--gold-light);
+  height: 190px; display: flex; align-items: center; justify-content: center; color: var(--gold-light);
   position: relative;
 }
 .lp-card-media::after {
   content: ""; position: absolute; inset: 0;
   background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), transparent 60%);
+}
+.lp-card-media-preview { overflow: hidden; padding: 0; background: #EFE8DC; }
+.lp-card-media-preview iframe {
+  width: 375px; height: 812px; border: 0; pointer-events: none; display: block;
+  margin: -240px auto 0; transform: scale(0.95); transform-origin: top center;
 }
 .lp-card-body { padding: 22px 26px 26px; }
 .lp-card h3 { font-size: 18px; margin: 0 0 8px; }
