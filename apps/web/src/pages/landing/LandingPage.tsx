@@ -451,15 +451,20 @@ const CSS = `
 .lp-hero .lp-lede { color: var(--text-on-dark); font-size: 18px; max-width: 56ch; margin: 0 0 8px; }
 .lp-hero p { color: var(--muted-dark); line-height: 1.7; max-width: 58ch; }
 .lp-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
-.lp-hero-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px; align-items: center; }
-.lp-hero-visual { position: relative; }
+.lp-hero .lp-shell { width: min(100% - 48px, 1320px); }
+.lp-hero-grid { display: grid; grid-template-columns: 1fr 1.35fr; gap: 24px; align-items: center; }
+.lp-hero-visual { position: relative; overflow: visible; }
 .lp-hero-visual img {
-  width: 100%; height: auto; display: block;
+  width: 128%; max-width: none; height: auto; display: block;
   filter: drop-shadow(0 30px 60px rgba(0,0,0,0.55));
+}
+@media (max-width: 1200px) {
+  .lp-hero-visual img { width: 112%; }
 }
 @media (max-width: 900px) {
   .lp-hero-grid { grid-template-columns: 1fr; }
   .lp-hero-visual { order: -1; max-width: 420px; margin: 0 auto 8px; }
+  .lp-hero-visual img { width: 100%; }
 }
 
 /* sections */
