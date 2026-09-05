@@ -26,6 +26,13 @@ import {
  * /login, /register, etc.
  */
 
+/**
+ * No real photography exists yet for these cards — each gets a distinct
+ * warm-toned gradient "swatch" instead of a flat background, so the grid
+ * doesn't read as empty while real photos are still TODO. Replace each
+ * `swatch` with a real photo (background-image) once one exists; the
+ * gradients were picked to stay in-family with the gold/ink palette.
+ */
 const SERVICES = [
   {
     icon: Heart,
@@ -33,6 +40,7 @@ const SERVICES = [
     tagline: "Turn your wedding announcement into an experience.",
     cta: "Create My Wedding Invitation",
     href: "/create/wedding-invitation",
+    swatch: "linear-gradient(135deg, #3d1f24, #160d10)",
   },
   {
     icon: Globe2,
@@ -40,6 +48,7 @@ const SERVICES = [
     tagline: "Your love story, beautifully online.",
     cta: "Discover Wedding Websites",
     href: "/create/wedding-video",
+    swatch: "linear-gradient(135deg, #1f2b30, #0d1416)",
   },
   {
     icon: LayoutTemplate,
@@ -47,6 +56,7 @@ const SERVICES = [
     tagline: "A website that represents your business.",
     cta: "Build My Website",
     href: "/create",
+    swatch: "linear-gradient(135deg, #20242f, #0d0e13)",
   },
   {
     icon: Palette,
@@ -54,6 +64,7 @@ const SERVICES = [
     tagline: "Give your brand a signature.",
     cta: "Create My Brand",
     href: "/create/brand-identity",
+    swatch: "linear-gradient(135deg, #2f2416, #130f0a)",
   },
   {
     icon: FileText,
@@ -61,6 +72,7 @@ const SERVICES = [
     tagline: "Make your experience look as strong as it is.",
     cta: "Design My CV",
     href: "/create/cv",
+    swatch: "linear-gradient(135deg, #241f2f, #0f0d13)",
   },
   {
     icon: CreditCard,
@@ -68,6 +80,7 @@ const SERVICES = [
     tagline: "Your identity, everywhere.",
     cta: "Create My Business Card",
     href: "/create/business-card",
+    swatch: "linear-gradient(135deg, #2a2318, #12100a)",
   },
 ] as const;
 
@@ -108,10 +121,10 @@ const STEPS = [
 ] as const;
 
 const WORK = [
-  { title: "Wedding Invitations", tagline: "Elegant. Emotional. Unforgettable." },
-  { title: "Brand Identities", tagline: "Distinctive. Consistent. Recognizable." },
-  { title: "Websites", tagline: "Modern. Responsive. Purposeful." },
-  { title: "Professional Designs", tagline: "Clean. Strategic. Memorable." },
+  { title: "Wedding Invitations", tagline: "Elegant. Emotional. Unforgettable.", swatch: "linear-gradient(160deg, #3d1f24, #160d10)" },
+  { title: "Brand Identities", tagline: "Distinctive. Consistent. Recognizable.", swatch: "linear-gradient(160deg, #2f2416, #130f0a)" },
+  { title: "Websites", tagline: "Modern. Responsive. Purposeful.", swatch: "linear-gradient(160deg, #20242f, #0d0e13)" },
+  { title: "Professional Designs", tagline: "Clean. Strategic. Memorable.", swatch: "linear-gradient(160deg, #241f2f, #0f0d13)" },
 ] as const;
 
 const FAQS = [
@@ -173,18 +186,23 @@ export function LandingPage() {
 
       {/* Hero */}
       <section className="lp-hero">
-        <div className="lp-shell">
-          <div className="lp-eyebrow">Ideas · Design · Lasting Impressions</div>
-          <h1>Digital Design,<br />Crafted to Be<br />Remembered.</h1>
-          <p className="lp-lede">Premium digital experiences for moments, brands, and people who deserve to stand out.</p>
-          <p>
-            From animated wedding invitations and elegant digital stationery to custom websites, professional
-            CVs, business cards, logos, and brand identities, NIVORA transforms your ideas into refined digital
-            designs made to leave an impression.
-          </p>
-          <div className="lp-actions">
-            <a href="#services" className="lp-btn lp-btn-line">Explore Our Services</a>
-            <Link to="/create" className="lp-btn lp-btn-fill">Start Your Project →</Link>
+        <div className="lp-shell lp-hero-grid">
+          <div>
+            <div className="lp-eyebrow">Ideas · Design · Lasting Impressions</div>
+            <h1>Digital Design,<br />Crafted to Be<br />Remembered.</h1>
+            <p className="lp-lede">Premium digital experiences for moments, brands, and people who deserve to stand out.</p>
+            <p>
+              From animated wedding invitations and elegant digital stationery to custom websites, professional
+              CVs, business cards, logos, and brand identities, NIVORA transforms your ideas into refined digital
+              designs made to leave an impression.
+            </p>
+            <div className="lp-actions">
+              <a href="#services" className="lp-btn lp-btn-line">Explore Our Services</a>
+              <Link to="/create" className="lp-btn lp-btn-fill">Start Your Project →</Link>
+            </div>
+          </div>
+          <div className="lp-hero-visual">
+            <img src="/images/hero-mockup.png" alt="NIVORA wedding website shown on a laptop and phone, alongside a save-the-date card" />
           </div>
         </div>
       </section>
@@ -214,10 +232,14 @@ export function LandingPage() {
           <div className="lp-grid lp-services">
             {SERVICES.map((s) => (
               <div key={s.title} className="lp-card">
-                <div className="lp-card-icon"><s.icon size={22} strokeWidth={1.5} /></div>
-                <h3>{s.title}</h3>
-                <p>{s.tagline}</p>
-                <Link to={s.href} className="lp-learn">{s.cta} →</Link>
+                <div className="lp-card-media" style={{ background: s.swatch }}>
+                  <s.icon size={28} strokeWidth={1.2} />
+                </div>
+                <div className="lp-card-body">
+                  <h3>{s.title}</h3>
+                  <p>{s.tagline}</p>
+                  <Link to={s.href} className="lp-learn">{s.cta} →</Link>
+                </div>
               </div>
             ))}
           </div>
@@ -285,7 +307,7 @@ export function LandingPage() {
           <h2 className="lp-title">Featured Creations</h2>
           <div className="lp-grid lp-work">
             {WORK.map((w) => (
-              <div key={w.title} className="lp-work-card">
+              <div key={w.title} className="lp-work-card" style={{ background: w.swatch }}>
                 <span>{w.title}</span>
                 <span className="lp-work-tagline">{w.tagline}</span>
               </div>
@@ -429,6 +451,16 @@ const CSS = `
 .lp-hero .lp-lede { color: var(--text-on-dark); font-size: 18px; max-width: 56ch; margin: 0 0 8px; }
 .lp-hero p { color: var(--muted-dark); line-height: 1.7; max-width: 58ch; }
 .lp-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+.lp-hero-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px; align-items: center; }
+.lp-hero-visual { position: relative; }
+.lp-hero-visual img {
+  width: 100%; height: auto; display: block;
+  filter: drop-shadow(0 30px 60px rgba(0,0,0,0.55));
+}
+@media (max-width: 900px) {
+  .lp-hero-grid { grid-template-columns: 1fr; }
+  .lp-hero-visual { order: -1; max-width: 420px; margin: 0 auto 8px; }
+}
 
 /* sections */
 .lp-section { padding: 88px 0; }
@@ -439,11 +471,19 @@ const CSS = `
 .lp-grid { display: grid; gap: 20px; margin-top: 40px; }
 .lp-services { grid-template-columns: repeat(3, 1fr); text-align: left; }
 .lp-card {
-  border: 1px solid var(--line-dark); background: #131412; border-radius: 8px; padding: 26px;
+  border: 1px solid var(--line-dark); background: #131412; border-radius: 8px; overflow: hidden;
   transition: border-color 200ms ease, transform 200ms ease;
 }
 .lp-card:hover { border-color: var(--gold-dark); transform: translateY(-3px); }
-.lp-card-icon { color: var(--gold-light); margin-bottom: 14px; }
+.lp-card-media {
+  height: 130px; display: flex; align-items: center; justify-content: center; color: var(--gold-light);
+  position: relative;
+}
+.lp-card-media::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), transparent 60%);
+}
+.lp-card-body { padding: 22px 26px 26px; }
 .lp-card h3 { font-size: 18px; margin: 0 0 8px; }
 .lp-card p { color: var(--muted-dark); font-size: 14px; line-height: 1.5; margin: 0 0 18px; }
 .lp-learn { color: var(--gold-light); font-size: 13px; font-weight: 600; }
@@ -482,7 +522,7 @@ const CSS = `
 .lp-work-card {
   display: flex; flex-direction: column; gap: 6px; padding: 28px 18px; min-height: 140px;
   justify-content: flex-end; border-radius: 8px; text-align: left;
-  background: linear-gradient(160deg, #1c1a16, #0f0e0c); border: 1px solid var(--line-dark); color: var(--text-on-dark);
+  border: 1px solid var(--line-dark); color: var(--text-on-dark);
 }
 .lp-work-card span:first-child { font-family: 'Cormorant Garamond', serif; font-size: 22px; }
 .lp-work-tagline { font-size: 12px; color: var(--gold-dark); }
