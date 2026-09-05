@@ -24,8 +24,10 @@ export function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          {/* Standalone: the landing page has its own dark header/footer, not PublicLayout's. */}
+          <Route path="/" element={<LandingPage />} />
+
           <Route element={<PublicLayout />}>
-            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
